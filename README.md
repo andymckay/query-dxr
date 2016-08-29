@@ -3,3 +3,4 @@ Querys the mozilla dxr repository for add-ons and then looks those add-ons up on
 Example:
 
 export DXR_COOKIES='{"mellon-cookie": "...", "X-Mapping-ddfpehom": "..."}'
+python query.py "ctypes.jsm"
