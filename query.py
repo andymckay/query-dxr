@@ -1,3 +1,4 @@
+import cookielib
 import json
 import os
 import sys
@@ -7,6 +8,24 @@ from jinja2 import Environment, FileSystemLoader
 import requests
 
 cookies = os.getenv('DXR_COOKIES')
+
+if cookies:
+    cookies = json.load(cookies)
+
+if not cookies:
+    cookie_file = os.getenv('DXR_COOKIES_FILE')
+
+    if cookie_file:
+        jar = cookielib.MozillaCookieJar()
+        jar.load(cookie_file, ignore_expires=True, ignore_discard=True)
+
+        cookies = {}
+        for cookie in jar:
+            if 'dxr.mozilla.org' in cookie.domain:
+                cookies[cookie.name] = cookie.value.strip()
+
+if not cookies:
+    raise ValueError('You must define DXR_COOKIES or DXR_COOKIES_FILE as an environment variable to get around addons security.')
 
 
 def lookup(cookies, query):
@@ -35,7 +54,9 @@ def lookup(cookies, query):
             addons[addon_id] = {
                 'id': addon_id,
                 'status': result.status_code,
-                'data': {}
+                'data': {},
+                # Hack something up.
+                'dev_page': 'https://addons.mozilla.org/en-US/developers/addon/{}/ownership'.format(addon_id)
             }
             continue
         
@@ -66,13 +87,6 @@ def generate(query, addons, lines):
 
 
 if __name__=='__main__':
-    if not cookies:
-        raise ValueError('You must define DXR_COOKIES as an environment variable to get around addons security.')
-
-    cookies = json.loads(cookies)
     query = sys.argv[1]
     addons, lines = lookup(cookies, query)
-    #print addons
-    #json.dump(addons, open('data.json', 'w'))
-#    addons = json.load(open('data.json', 'r'))
     generate(query, addons, lines)

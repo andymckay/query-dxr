@@ -25,7 +25,7 @@
           <tr>
             <td>{{ addon.id }}</td>
             {% if addon.status != 200 %}
-                <td colspan="2">Unknown, AMO returned a {{ addon.status }}. Likely unlisted.</td>
+                <td colspan="2">Unknown, AMO returned a {{ addon.status }}. Likely unlisted. <a href="{{ addon.dev_page }}">Developer page?</a></td>
             {% else %}
                 <td><a href="{{ addon.data.url }}">{{ addon.data.name.get('en-US', addon.data.slug) }}</a></td>
                 <td>{{ '{0:,}'.format(addon.data.weekly_downloads) }}</td>
