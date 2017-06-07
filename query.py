@@ -10,7 +10,7 @@ import requests
 cookies = os.getenv('DXR_COOKIES')
 
 if cookies:
-    cookies = json.load(cookies)
+    cookies = json.loads(cookies)
 
 if not cookies:
     cookie_file = os.getenv('DXR_COOKIES_FILE')
@@ -32,7 +32,7 @@ def lookup(cookies, query):
     headers = {'Accept': 'application/json'}
     query_param = {'q': query, 'limit': 1000}
     results = requests.get(
-        'https://dxr.mozilla.org/addons/search', 
+        'https://dxr.mozilla.org/addons/search',
         data=query_param, cookies=cookies, headers=headers)
     results.raise_for_status()
 
@@ -40,13 +40,13 @@ def lookup(cookies, query):
     addon_ids = set()
     lines = {}
     for result in results.json()['results']:
-        addon_id = result['path'].split('/')[0]
+        addon_id = result['path'].split('/')[1]
         addon_ids.add(addon_id)
         lines.setdefault(addon_id, [])
         lines[addon_id].append(result)
 
     print 'Found: {} addons'.format(len(addon_ids))
-    
+
     for addon_id in addon_ids:
         result = requests.get(
             'https://addons.mozilla.org/api/v3/addons/addon/{}/'.format(addon_id))
@@ -59,11 +59,11 @@ def lookup(cookies, query):
                 'dev_page': 'https://addons.mozilla.org/en-US/developers/addon/{}/ownership'.format(addon_id)
             }
             continue
-        
+
         addons[addon_id] = {
             'id': addon_id,
             'status': result.status_code,
-            'data': result.json() 
+            'data': result.json()
         }
 
     return addons, lines
